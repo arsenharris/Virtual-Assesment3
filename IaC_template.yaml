@@ -173,6 +173,8 @@ Resources:
           Value: ACME-Windows-Server-POC
         - Key: Environment
           Value: Assessment
+        - Key: DeploymentMethod
+          Value: CloudFormation
 
 Outputs:
 
