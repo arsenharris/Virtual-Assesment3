@@ -1,0 +1,197 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  ACME virtual infrastructure proof of concept.
+  Demonstrates secure EC2 deployment, public access
+  and isolated test networks.
+
+Parameters:
+
+  WindowsAmiId:
+    Type: AWS::EC2::Image::Id
+    Description: Windows Server 2025 AMI ID
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Existing EC2 key pair
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    Description: >
+      Lab demonstration size. Production desktop sizing:
+      m6i.2xlarge (8 vCPU, 32 GiB RAM).
+
+  RootVolumeSize:
+    Type: Number
+    Default: 30
+    MinValue: 30
+    MaxValue: 2048
+    Description: >
+      Lab demonstration size in GB. ACME production
+      desktop storage requirement is 500 GB.
+
+  RdpCidr:
+    Type: String
+    Description: Your public IP address followed by /32
+
+Resources:
+
+  ACMEVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.20.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: ACME-VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ACME-Internet-Gateway
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ACMEVpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ACMEVpc
+      CidrBlock: 10.20.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: ACME-Public-Subnet
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ACMEVpc
+      Tags:
+        - Key: Name
+          Value: ACME-Public-Routes
+
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  Test1Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ACMEVpc
+      CidrBlock: 10.20.10.0/24
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: ACME-TEST1-Isolated-Subnet
+
+  Test2Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ACMEVpc
+      CidrBlock: 10.20.20.0/24
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: ACME-TEST2-Isolated-Subnet
+
+  WindowsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Restricted RDP access for ACME server
+      VpcId: !Ref ACMEVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          CidrIp: !Ref RdpCidr
+      Tags:
+        - Key: Name
+          Value: ACME-Windows-Security-Group
+
+  Test1SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Isolated TEST-1 security group
+      VpcId: !Ref ACMEVpc
+      Tags:
+        - Key: Name
+          Value: ACME-TEST1-Security-Group
+
+  Test2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Isolated TEST-2 security group
+      VpcId: !Ref ACMEVpc
+      Tags:
+        - Key: Name
+          Value: ACME-TEST2-Security-Group
+
+  WindowsServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref WindowsAmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds:
+        - !Ref WindowsSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref RootVolumeSize
+            VolumeType: gp3
+            Encrypted: true
+            DeleteOnTermination: true
+      Tags:
+        - Key: Name
+          Value: ACME-Windows-Server-POC
+        - Key: Environment
+          Value: Assessment
+
+Outputs:
+
+  InstanceId:
+    Description: Windows EC2 instance ID
+    Value: !Ref WindowsServer
+
+  PublicIP:
+    Description: Windows EC2 public IP
+    Value: !GetAtt WindowsServer.PublicIp
+
+  VpcId:
+    Description: ACME VPC ID
+    Value: !Ref ACMEVpc
+
+  Test1SubnetId:
+    Description: Isolated TEST-1 subnet
+    Value: !Ref Test1Subnet
+
+  Test2SubnetId:
+    Description: Isolated TEST-2 subnet
+    Value: !Ref Test2Subnet
