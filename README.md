@@ -15,7 +15,7 @@ This repository contains the files and documentation for Virtual Assessment 3. T
 - Verified that the remote Windows Server desktop was accessible.
 - 
 **1. EC2 instance created**
-![AWS EC2 Instance](aws instance created.png)
+![AWS EC2 Instance](/awsinstancecreated.png)
 
 **2. RDP password retrieval**
 ![AWS RDP Get Password](awsrdpgetpassword.png)
