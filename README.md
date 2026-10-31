@@ -18,13 +18,13 @@ This repository contains the files and documentation for Virtual Assessment 3. T
 ![AWS EC2 Instance](/awsinstancecreated.png)
 
 **2. RDP password retrieval**
-![AWS RDP Get Password](awsrdpgetpassword.png)
+![AWS RDP Get Password](/awsrdpgetpassword.png)
 
 **3. Successful RDP connection**
-![AWS RDP Connection](awsrdp.png)
+![AWS RDP Connection](/awsrdp.png)
 
 **4.  RDP connection**
-![RDP Connected](runningrdp.png)
+![RDP Connected](/runningrdp.png)
 
 
 ### Task 7.2 – Create a Git Repository
