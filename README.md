@@ -25,7 +25,6 @@ This repository contains the files and documentation for Virtual Assessment 3. T
 
 **4.  RDP connection**
 ![RDP Connected](/runningrdp.png)
-![AWS RDP Connection](/runningrdp.png)
 
 
 ### Task 7.2 – Create a Git Repository
