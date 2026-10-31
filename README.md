@@ -13,8 +13,15 @@ This repository contains the files and documentation for Virtual Assessment 3. T
 - Retrieved the Windows Administrator password.
 - Established a Remote Desktop Protocol (RDP) connection from Windows App on macOS.
 - Verified that the remote Windows Server desktop was accessible.
+**1. EC2 instance created**
+![AWS EC2 Instance](awsinstancecreated.png)
+**2. RDP password retrieval**
+![AWS RDP Get Password](awsrdpgetpassword.png)
+**3. Successful RDP connection**
+![AWS RDP Connection](awsrdp.png)
+**4.  RDP connection**
+![RDP Connected](runningrdp.png)
 
-**Evidence:** Screenshots of the running EC2 instance and successful RDP connection will be added here.
 
 ### Task 7.2 – Create a Git Repository
 
